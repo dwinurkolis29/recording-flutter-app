@@ -1,15 +1,40 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
 import '../model/chicken_data.dart';
+import '../model/user_data.dart';
 import 'login.dart';
+import 'user.dart';
 
-class Home extends StatelessWidget {
-  Home({super.key});
+class Home extends StatefulWidget {
+  const Home({super.key});
 
+  @override
+  State<Home> createState() => _HomeState();
+}
+
+class _HomeState extends State<Home> {
   final Box _boxLogin = Hive.box("login");
   final Box<ChickenData> _chickenDataBox = Hive.box<ChickenData>('chickenData');
+  int _selectedIndex = 0;
+
+  late final List<Widget> _widgetOptions;
+
+  @override
+  void initState() {
+    super.initState();
+    _widgetOptions = <Widget>[
+      const HomeContent(),
+      UserContent(),  
+      const Center(child: Text('Settings')),
+    ];
+  }
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
 
   void _addMultipleChickenData() {
     // Define a list of ChickenData instances
@@ -27,41 +52,30 @@ class Home extends StatelessWidget {
     }
   }
 
-  void _deleteAllChickenData() {
-    // Clear all data from the box
-    _chickenDataBox.clear();
-  }
-
-
   void _showLogoutDialog(BuildContext context) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Logout'),
-          content: Text('Apakah kamu yakin ingin logout?'),
+          title: const Text('Logout'),
+          content: const Text('Apakah kamu yakin ingin logout?'),
           actions: <Widget>[
-            /// Cancel button
             TextButton(
-              child: Text('Cancel'),
+              child: const Text('Cancel'),
               onPressed: () {
-                Navigator.of(context).pop(); /// Close the dialog
+                Navigator.of(context).pop();
               },
             ),
-            /// Logout button
             TextButton(
-              child: Text('Logout'),
+              child: const Text('Logout'),
               onPressed: () {
-                Navigator.of(context).pop(); /// Close the dialog
-                _boxLogin.clear(); /// Clear login data
-                _boxLogin.put("loginStatus", false); /// Update login status
-                /// Navigate to Login screen
+                Navigator.of(context).pop();
+                _boxLogin.clear();
+                _boxLogin.put("loginStatus", false);
                 Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(
-                    builder: (context) {
-                      return const Login(); /// Return to login screen
-                    },
+                    builder: (context) => const Login(),
                   ),
                 );
               },
@@ -80,82 +94,185 @@ class Home extends StatelessWidget {
         title: const Text("Recording App"),
         elevation: 0,
         actions: [
-          /// Logout button with icon
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: DecoratedBox(
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 shape: BoxShape.circle,
               ),
               child: IconButton(
-                /// On pressed, show logout dialog
-                onPressed: () => _showLogoutDialog(context) ,
+                onPressed: () => _showLogoutDialog(context),
                 icon: const Icon(Icons.logout_rounded),
               ),
             ),
           )
         ],
       ),
-      backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-      body: Container(
-        padding: const EdgeInsets.all(10),
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              Row(
+      body: _widgetOptions.elementAt(_selectedIndex),
+      bottomNavigationBar: BottomNavigationBar(
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: 'User',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.settings),
+            label: 'Settings',
+          ),
+        ],
+        currentIndex: _selectedIndex,
+        selectedItemColor: Theme.of(context).colorScheme.primary,
+        onTap: _onItemTapped,
+      ),
+      floatingActionButton: _selectedIndex == 0 
+          ? FloatingActionButton(
+              onPressed: _addMultipleChickenData,
+              child: const Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(
-                    /// Get username from login data
-                    "Hallo, Bro " + _boxLogin.get("userName"),
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
+                  Icon(Icons.add),
+                  Text("Tambah", style: TextStyle(fontSize: 12)),
                 ],
               ),
-              const SizedBox(height: 10),
-              const DiscountBanner(),
-              const SizedBox(height: 10),
-              /// Show data table
-              ValueListenableBuilder<Box<ChickenData>>(
-                valueListenable: _chickenDataBox.listenable(),
-                builder: (context, box, _) {
-                  final chickenDataList = box.values.toList();
+            )
+          : null,
+    );
+  }
+}
 
-                  return DataTable(
-                    /// Define columns
-                    columns: const [
-                      DataColumn(label: Text('Umur')),
-                      DataColumn(label: Text('Berat\n(Gr)')),
-                      DataColumn(label: Text('Habis\nPakan')),
-                      DataColumn(label: Text('Mati\nAyam')),
-                      DataColumn(label: Text('FCR')),
-                    ],
-                    rows: chickenDataList.map((data) {
-                      /// Define rows
-                      return DataRow(cells: [
-                        DataCell(Text(data.umur.toString())),
-                        DataCell(Text(data.berat.toString())),
-                        DataCell(Text(data.habisPakan.toString())),
-                        DataCell(Text(data.matiAyam.toString())),
-                        DataCell(Text(data.fcr.toString())),
-                      ]);
-                    }).toList(),
-                  );
-                },
-              ),
-            ],
-          ),
-        ),
-      ),
-      /// Add button
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _addMultipleChickenData(),
+class HomeContent extends StatelessWidget {
+  const HomeContent({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final Box<ChickenData> _chickenDataBox = Hive.box<ChickenData>('chickenData');
+    final Box _boxLogin = Hive.box("login");
+    
+    return Container(
+      padding: const EdgeInsets.all(10),
+      child: SingleChildScrollView(
         child: Column(
-          mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.add), // Icon
-            Text("Tambah", style: TextStyle(fontSize: 12)), // Text
+            Row(
+              children: [
+                Text(
+                  "Hallo, Bro " + _boxLogin.get("userName"),
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            const DiscountBanner(),
+            const SizedBox(height: 10),
+            ValueListenableBuilder<Box<ChickenData>>(
+              valueListenable: _chickenDataBox.listenable(),
+              builder: (context, box, _) {
+                final chickenDataList = box.values.toList();
+
+                return DataTable(
+                  columns: const [
+                    DataColumn(label: Text('Umur')),
+                    DataColumn(label: Text('Berat\n(Gr)')),
+                    DataColumn(label: Text('Habis\nPakan')),
+                    DataColumn(label: Text('Mati\nAyam')),
+                    DataColumn(label: Text('FCR')),
+                  ],
+                  rows: chickenDataList.map((data) {
+                    return DataRow(cells: [
+                      DataCell(Text(data.umur.toString())),
+                      DataCell(Text(data.berat.toString())),
+                      DataCell(Text(data.habisPakan.toString())),
+                      DataCell(Text(data.matiAyam.toString())),
+                      DataCell(Text(data.fcr.toString())),
+                    ]);
+                  }).toList(),
+                );
+              },
+            ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class UserContent extends StatefulWidget {
+  const UserContent({Key? key}) : super(key: key);
+
+  @override
+  State<UserContent> createState() => _UserContentState();
+}
+
+class _UserContentState extends State<UserContent> {
+  /// List of users
+  late Future<List<User>> futureUsers;
+
+  @override
+  void initState() {
+    super.initState();
+    /// Get list of users
+    futureUsers = UserService().getUsers();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Daftar Pengguna')),
+      /// Show list of users
+      body: FutureBuilder<List<User>>(
+        future: futureUsers,
+        builder: (context, AsyncSnapshot<List<User>> snapshot) {
+          /// Show loading indicator
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          /// Show error message
+          else if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          }
+          /// Show empty message
+          else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return const Center(child: Text('Tidak ada data pengguna'));
+          }
+          final users = snapshot.data!;
+          return ListView.separated(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            itemCount: users.length,
+            separatorBuilder: (context, index) => const Divider(height: 1, color: Colors.grey),
+            itemBuilder: (context, index) {
+              final user = users[index];
+              return ListTile(
+                leading: CircleAvatar(
+                  /// Show user profile picture
+                  backgroundImage: NetworkImage(user.picture),
+                  onBackgroundImageError: (_, __) {
+                    // Handle image loading error
+                  },
+                ),
+                /// Show user name
+                title: Text('${user.name.first} ${user.name.last}'),
+                /// Show user email
+                subtitle: Text(user.email),
+                trailing: const Icon(Icons.chevron_right, size: 20),
+                onTap: () => _navigateToUserDetail(context, user),
+              );
+            },
+          );
+        },
+      ),
+    );
+  }
+
+  /// Navigate to user detail
+  void _navigateToUserDetail(BuildContext context, User user) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => UserPage(user: user),
       ),
     );
   }
