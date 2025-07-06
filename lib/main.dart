@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'model/chicken_data.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
 import 'main_app.dart';
 void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   await Hive.initFlutter();
   /// Initialize Hive
   await _initHive();
-  Hive.registerAdapter(ChickenDataAdapter()); // Register the adapter
-  await Hive.openBox<ChickenData>('chickenData'); // Open the box
   /// Run the application
   runApp(const MainApp());
 }

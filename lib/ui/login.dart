@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
@@ -18,7 +19,7 @@ class _LoginState extends State<Login> {
 
   final FocusNode _focusNodePassword = FocusNode();
   /// controllers username input
-  final TextEditingController _controllerUsername = TextEditingController();
+  final TextEditingController _controllerEmail = TextEditingController();
   /// controllers password input
   final TextEditingController _controllerPassword = TextEditingController();
 
@@ -28,6 +29,34 @@ class _LoginState extends State<Login> {
   final Box _boxLogin = Hive.box("login");
   /// Hive box for accounts
   final Box _boxAccounts = Hive.box("accounts");
+
+  void login() async {
+    try {
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
+          email: _controllerEmail.text,
+          password: _controllerPassword.text
+      );
+      if (_formKey.currentState?.validate() ?? false) {
+        _boxLogin.put("loginStatus", true);
+        _boxLogin.put("Email", _controllerEmail.text);
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) {
+              return Home();
+            },
+          ),
+        );
+      }
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'user-not-found') {
+        print('No user found for that email.');
+      } else if (e.code == 'wrong-password') {
+        print('Wrong password provided for that user.');
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -66,11 +95,11 @@ class _LoginState extends State<Login> {
               const SizedBox(height: 60),
               /// Username
               TextFormField(
-                controller: _controllerUsername,
+                controller: _controllerEmail,
                 keyboardType: TextInputType.name,
                 decoration: InputDecoration(
-                  labelText: "Username",
-                  prefixIcon: const Icon(Icons.person_outline),
+                  labelText: "Email",
+                  prefixIcon: const Icon(Icons.email_outlined),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
@@ -78,16 +107,7 @@ class _LoginState extends State<Login> {
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
-                onEditingComplete: () => _focusNodePassword.requestFocus(),
-                validator: (String? value) {
-                  if (value == null || value.isEmpty) {
-                    return "Masukkan username.";
-                  } else if (!_boxAccounts.containsKey(value)) {
-                    return "Username belum terdaftar.";
-                  }
-
-                  return null;
-                },
+                onEditingComplete: () => _focusNodePassword.requestFocus()
               ),
               const SizedBox(height: 10),
               /// Password
@@ -115,16 +135,6 @@ class _LoginState extends State<Login> {
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
-                validator: (String? value) {
-                  if (value == null || value.isEmpty) {
-                    return "Masukkan password.";
-                  } else if (value !=
-                      _boxAccounts.get(_controllerUsername.text)) {
-                    return "Password salah.";
-                  }
-
-                  return null;
-                },
               ),
               const SizedBox(height: 60),
               /// Login and Signup buttons
@@ -137,21 +147,7 @@ class _LoginState extends State<Login> {
                         borderRadius: BorderRadius.circular(20),
                       ),
                     ),
-                    onPressed: () {
-                      if (_formKey.currentState?.validate() ?? false) {
-                        _boxLogin.put("loginStatus", true);
-                        _boxLogin.put("userName", _controllerUsername.text);
-
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) {
-                              return Home();
-                            },
-                          ),
-                        );
-                      }
-                    },
+                    onPressed: login,
                     child: const Text("Login"),
                   ),
                   Row(
@@ -187,7 +183,7 @@ class _LoginState extends State<Login> {
   @override
   void dispose() {
     _focusNodePassword.dispose();
-    _controllerUsername.dispose();
+    _controllerEmail.dispose();
     _controllerPassword.dispose();
     super.dispose();
   }

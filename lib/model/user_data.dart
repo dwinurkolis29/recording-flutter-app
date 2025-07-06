@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:uts_project/model/safe_convert.dart';
 
 class Name {
   final String first;
@@ -10,36 +11,94 @@ class Name {
     required this.last,
   });
 
-  factory Name.fromJson(Map<String, dynamic> json) {
-    return Name(first: json['first'], last: json['last']);
+  factory Name.fromJson(Map<String, dynamic>? json) {
+    return Name(
+        first: json?['first'] ?? '',
+        last: json?['last'] ?? '',
+    );
   }
+
+  toJson() => {
+    'first': first,
+    'last': last,
+  };
 }
 
 class User {
-  final String email;
-  final String picture;
-  final Name name;
-  final String gender;
-  final String phone;
-  final String location;
+  final String? username;
+  final String? email;
+  final String? picture;
+  final Name? name;
+  final String? gender;
+  final String? phone;
+  final String? location;
+  final String? address;
+  final String? password;
+  final String? role;
+  final String? id;
+  final String? createdAt;
+  final String? updatedAt;
 
   const User ({
-    required this.email,
-    required this.picture,
-    required this.name,
-    required this.gender,
-    required this.phone,
-    required this.location
+    this.email,
+    this.picture,
+    this.name,
+    this.gender,
+    this.phone,
+    this.location,
+    this.address,
+    this.username,
+    this.password,
+    this.role,
+    this.id,
+    this.createdAt,
+    this.updatedAt
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
-        email: json['email'],
-        picture: json['picture']['medium'],
-        name: Name.fromJson(json['name']),
-        gender: json['gender'],
-        phone: json['phone'],
-        location: json['location']['city']);
+
+        username: asString(json, 'username'),
+        email: asString(json, 'email'),
+        phone: asString(json, 'phone'),
+        address: asString(json, 'address'),
+        picture: asString(json, 'picture', defaultValue: ''), //json['picture']?['medium'],
+        name: Name.fromJson(asMap(json, 'name', defaultValue: {})),
+        gender: asString(json, 'gender', defaultValue: ''), //json['gender'] ?? '',
+        location: asString(json, 'location', defaultValue: ''), // json['location']?['city'] ?? ''
+    );
+  }
+
+  toJson() => {
+    'email': email,
+    'picture': picture,
+    'gender': gender,
+    'phone': phone,
+    'location': location,
+    'address': address,
+    'username': username
+  };
+
+  User copyWith({
+    String? email,
+    String? picture,
+    Name? name,
+    String? gender,
+    String? phone,
+    String? location,
+    String? address,
+    String? username
+  }) {
+    return User(
+      email: email ?? this.email,
+      picture: picture ?? this.picture,
+      name: name ?? this.name,
+      gender: gender ?? this.gender,
+      phone: phone ?? this.phone,
+      location: location ?? this.location,
+      address: address ?? this.address,
+      username: username ?? this.username
+    );
   }
 }
 
