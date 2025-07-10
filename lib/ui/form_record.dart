@@ -5,10 +5,13 @@ import 'package:uts_project/model/recording_data.dart';
 
 import '../service/firebase_service.dart';
 
+// class yang digunakan untuk menambahkan data recording
 class AddRecord extends StatefulWidget {
-  const AddRecord({super.key});
 
-  /// Creates the state of the [Signup] widget.
+  AddRecord({
+    Key? key,
+  }) : super(key: key);
+
   @override
   State<AddRecord> createState() => _AddRecord();
 }
@@ -17,22 +20,28 @@ class _AddRecord extends State<AddRecord> {
   final GlobalKey<FormState> _formKey = GlobalKey();
   bool _isLoading = false;
 
+  //membuat focus node untuk text field
   final FocusNode _focusNodeUmur = FocusNode();
   final FocusNode _focusNodeTerimaPakan = FocusNode();
   final FocusNode _focusNodeHabisPakan = FocusNode();
   final FocusNode _focusNodeMatiAyam = FocusNode();
   final FocusNode _focusNodeBeratAyam = FocusNode();
+  //membuat controller untuk text field
   final TextEditingController _controllerUmur = TextEditingController();
   final TextEditingController _controllerTerimaPakan = TextEditingController();
   final TextEditingController _controllerHabisPakan = TextEditingController();
   final TextEditingController _controllerMatiAyam = TextEditingController();
   final TextEditingController _controllerBeratAyam = TextEditingController();
 
+  //membuat instance firebase
   final db = FirebaseFirestore.instance;
   final FirebaseService _firebaseService = FirebaseService();
+  //membuat instance auth
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
+  //membuat method untuk menambahkan data recording
   Future<void> addRecord() async {
+
     if (!_formKey.currentState!.validate()) return;
     
     setState(() {
@@ -43,6 +52,7 @@ class _AddRecord extends State<AddRecord> {
       final user = _auth.currentUser;
       if (user == null) {
         if (mounted) {
+          //menampilkan snackbar jika pengguna belum login
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Anda harus login terlebih dahulu')),
           );
@@ -50,22 +60,24 @@ class _AddRecord extends State<AddRecord> {
         return;
       }
 
+      //membuat objek recording dengan data yang diambil dari text field
       final recording = RecordingData(
         umur: int.tryParse(_controllerUmur.text) ?? 0,
         terimaPakan: int.tryParse(_controllerTerimaPakan.text) ?? 0,
         habisPakan: double.tryParse(_controllerHabisPakan.text) ?? 0,
         matiAyam: int.tryParse(_controllerMatiAyam.text) ?? 0,
         beratAyam: int.tryParse(_controllerBeratAyam.text) ?? 0,
-        id_periode: 1, // Sesuaikan dengan periode yang sesuai
+        id_periode: 1, // default periode adalah 1
       );
 
       await _firebaseService.addRecording(recording, user.email!);
       
       if (mounted) {
-        Navigator.pop(context, true); // Return true to indicate success
+        Navigator.pop(context, true);
       }
     } catch (e) {
       if (mounted) {
+        //menampilkan snackbar jika terjadi error
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Gagal menyimpan data: ${e.toString()}')),
         );
@@ -73,6 +85,7 @@ class _AddRecord extends State<AddRecord> {
     } finally {
       if (mounted) {
         setState(() {
+          //mengatur isLoading menjadi false jika selesai
           _isLoading = false;
         });
       }
@@ -82,18 +95,21 @@ class _AddRecord extends State<AddRecord> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // mengatur warna latar belakang
       backgroundColor: Theme.of(context).colorScheme.primaryContainer,
       appBar: AppBar(
+        // mengatur warna background appbar
         backgroundColor: Theme.of(context).colorScheme.primaryContainer,
         elevation: 0,
       ),
       body: Form(
         key: _formKey,
+        // menggunakan scroll view agar form dapat di scroll
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 30.0),
           child: Column(
             children: [
-              /// Header
+              // Header Form Recording
               const SizedBox(height: 30),
               FittedBox(
                 fit: BoxFit.fitWidth,
@@ -103,13 +119,12 @@ class _AddRecord extends State<AddRecord> {
                 ),
               ),
               const SizedBox(height: 10),
-              /// Subtitle
               Text(
                 "Menambakan data recording ayam broiler.",
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
               const SizedBox(height: 35),
-              /// Username field
+              // Umur field
               TextFormField(
                 controller: _controllerUmur,
                 focusNode: _focusNodeUmur,
@@ -124,7 +139,7 @@ class _AddRecord extends State<AddRecord> {
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
-                /// Username validation
+                // menampilkan error jika umur kosong karena umur wajib diisi
                 validator: (String? value) {
                   if (value == null || value.isEmpty) {
                     return "Umur tidak boleh kosong. Silahkan masukkan umur ayam.";
@@ -134,7 +149,7 @@ class _AddRecord extends State<AddRecord> {
                 onEditingComplete: () => _focusNodeTerimaPakan.requestFocus(),
               ),
               const SizedBox(height: 10),
-              /// Terima pakan field
+              // Terima pakan field
               TextFormField(
                 controller: _controllerTerimaPakan,
                 focusNode: _focusNodeTerimaPakan,
@@ -152,7 +167,7 @@ class _AddRecord extends State<AddRecord> {
                 onEditingComplete: () => _focusNodeHabisPakan.requestFocus(),
               ),
               const SizedBox(height: 10),
-              /// Phone field
+              // Habis pakan field
               TextFormField(
                 controller: _controllerHabisPakan,
                 focusNode: _focusNodeHabisPakan,
@@ -167,6 +182,7 @@ class _AddRecord extends State<AddRecord> {
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
+                // menampilkan error jika habis pakan kosong karena habis pakan wajib diisi
                 validator: (String? value) {
                   if (value == null || value.isEmpty) {
                     return "Habis pakan tidak boleh kosong. Silahkan masukkan jumlah pakan ayam.";
@@ -176,7 +192,7 @@ class _AddRecord extends State<AddRecord> {
                 onEditingComplete: () => _focusNodeMatiAyam.requestFocus(),
               ),
               const SizedBox(height: 10),
-              /// mati ayam field
+              // Mati ayam field
               TextFormField(
                 controller: _controllerMatiAyam,
                 focusNode: _focusNodeMatiAyam,
@@ -191,11 +207,10 @@ class _AddRecord extends State<AddRecord> {
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
-                /// Username validation
                 onEditingComplete: () => _focusNodeBeratAyam.requestFocus(),
               ),
               const SizedBox(height: 10),
-              /// Berat ayam field
+              // Berat ayam field
               TextFormField(
                 controller: _controllerBeratAyam,
                 focusNode: _focusNodeBeratAyam,
@@ -210,6 +225,13 @@ class _AddRecord extends State<AddRecord> {
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
+                // menampilkan error jika mati ayam kosong karena mati ayam wajib diisi
+                validator: (String? value) {
+                  if (value == null || value.isEmpty) {
+                    return "Berat ayam tidak boleh kosong. Silahkan masukkan berat ayam.";
+                  }
+                  return null;
+                },
               ),
               const SizedBox(height: 50),
               /// Register button
@@ -223,11 +245,13 @@ class _AddRecord extends State<AddRecord> {
                       ),
                     ),
                     onPressed: _isLoading ? null : () {
+                      // memeriksa apakah form valid
                     if (_formKey.currentState?.validate() ?? false) {
                       addRecord();
                     }
                   },
                   child: _isLoading
+                      // menampilkan loading jika isLoading true
                       ? const SizedBox(
                           width: 20,
                           height: 20,
@@ -249,21 +273,20 @@ class _AddRecord extends State<AddRecord> {
 
   @override
   void dispose() {
-    // Dispose of the focus nodes to prevent memory leaks.
+    // membuang focus node agar tidak terjadi memory leak
     _focusNodeUmur.dispose();
     _focusNodeTerimaPakan.dispose();
     _focusNodeHabisPakan.dispose();
     _focusNodeMatiAyam.dispose();
     _focusNodeBeratAyam.dispose();
 
-    // Dispose of the text editing controllers to prevent memory leaks.
+    // membuang controller agar tidak terjadi memory leak
     _controllerUmur.dispose();
     _controllerTerimaPakan.dispose();
     _controllerHabisPakan.dispose();
     _controllerMatiAyam.dispose();
     _controllerBeratAyam.dispose();
 
-    // Call the superclass's dispose method.
     super.dispose();
   }
 }

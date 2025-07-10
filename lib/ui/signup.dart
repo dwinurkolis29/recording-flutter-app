@@ -7,7 +7,6 @@ import 'package:uts_project/model/user_data.dart';
 class Signup extends StatefulWidget {
   const Signup({super.key});
 
-  /// Creates the state of the [Signup] widget.
   @override
   State<Signup> createState() => _SignupState();
 }
@@ -15,12 +14,15 @@ class Signup extends StatefulWidget {
 class _SignupState extends State<Signup> {
   final GlobalKey<FormState> _formKey = GlobalKey();
 
+  // membuat focus node
   final FocusNode _focusNodeUsername = FocusNode();
   final FocusNode _focusNodeEmail = FocusNode();
   final FocusNode _focusNodePhone = FocusNode();
   final FocusNode _focusNodeAddress = FocusNode();
   final FocusNode _focusNodePassword = FocusNode();
   final FocusNode _focusNodeConfirmPassword = FocusNode();
+
+  // membuat text editing controller
   final TextEditingController _controllerUsername = TextEditingController();
   final TextEditingController _controllerEmail = TextEditingController();
   final TextEditingController _controllerPhone = TextEditingController();
@@ -29,25 +31,31 @@ class _SignupState extends State<Signup> {
   final TextEditingController _controllerConFirmPassword =
       TextEditingController();
 
-  final Box _boxAccounts = Hive.box("accounts"); /// Hive box for accounts
-  bool _obscurePassword = true; /// Password visibility
+  final Box _boxAccounts = Hive.box("accounts");
 
+  // membuat variabel untuk menyimpan password visibility
+  bool _obscurePassword = true;
+
+  // membuat db instance untuk firestore
   final db = FirebaseFirestore.instance;
 
+  // membuat method untuk signup
   void signup() async {
     try {
       if (_formKey.currentState?.validate() ?? false) {
+        // Menggunakan FirebaseAuth untuk signup hanya untuk email dan password
         await FirebaseAuth.instance.createUserWithEmailAndPassword(
           email: _controllerEmail.text,
           password: _controllerPassword.text,
         );
-          _boxAccounts.put(
-            _controllerEmail.text, /// Save email
-            _controllerConFirmPassword.text, /// Save password
-          );
+        // Menyimpan email dan password ke Hive box
+        _boxAccounts.put(
+          _controllerEmail.text,
+          _controllerConFirmPassword.text,
+        );
 
-
-        final user = User.fromJson({
+        // Menyimpan data user ke firestore
+        final user = UserData.fromJson({
           "username": _controllerUsername.text,
           "email": _controllerEmail.text,
           "phone": _controllerPhone.text,
@@ -61,12 +69,11 @@ class _SignupState extends State<Signup> {
             .collection(_controllerEmail.text)
             .add(user.toJson());
 
-        /// Show snackbar
+        // Menampilkan snackbar sukses
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             width: 200,
-            backgroundColor:
-            Theme.of(context).colorScheme.secondary,
+            backgroundColor: Theme.of(context).colorScheme.secondary,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10),
             ),
@@ -76,7 +83,6 @@ class _SignupState extends State<Signup> {
         );
 
         _formKey.currentState?.reset();
-
         Navigator.pop(context);
       }
     } on FirebaseAuthException catch (e) {
@@ -96,21 +102,22 @@ class _SignupState extends State<Signup> {
       backgroundColor: Theme.of(context).colorScheme.primaryContainer,
       body: Form(
         key: _formKey,
+        // menggunakan scroll view agar form dapat di scroll
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 30.0),
           child: Column(
             children: [
-              /// Header
+              // Header aplikasi
               const SizedBox(height: 100),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  /// Icon
+                  // load gambar
                   const Image(
-                      width: 50, height: 50,
-                      image: AssetImage('images/hen.png')
+                    width: 50,
+                    height: 50,
+                    image: AssetImage('images/hen.png'),
                   ),
-                  /// Title
                   Text(
                     "Recording App",
                     style: Theme.of(context).textTheme.headlineLarge,
@@ -118,13 +125,13 @@ class _SignupState extends State<Signup> {
                 ],
               ),
               const SizedBox(height: 10),
-              /// Subtitle
               Text(
                 "Silahkan daftar terlebih dahulu",
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
               const SizedBox(height: 35),
-              /// Username field
+
+              // Username field
               TextFormField(
                 controller: _controllerUsername,
                 focusNode: _focusNodeUsername,
@@ -139,7 +146,7 @@ class _SignupState extends State<Signup> {
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
-                /// Username validation
+                // melakukan validasi username tidak boleh kosong
                 validator: (String? value) {
                   if (value == null || value.isEmpty) {
                     return "Masukkan username.";
@@ -149,7 +156,8 @@ class _SignupState extends State<Signup> {
                 onEditingComplete: () => _focusNodeEmail.requestFocus(),
               ),
               const SizedBox(height: 10),
-              /// Email field
+
+              // Email field
               TextFormField(
                 controller: _controllerEmail,
                 focusNode: _focusNodeEmail,
@@ -164,10 +172,11 @@ class _SignupState extends State<Signup> {
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
-                /// Email validation
+                // melakukan validasi email tidak boleh kosong
                 validator: (String? value) {
                   if (value == null || value.isEmpty) {
                     return "Masukkan email.";
+                    // melakukan validasi email harus valid
                   } else if (!(value.contains('@') && value.contains('.'))) {
                     return "Email tidak valid.";
                   }
@@ -176,7 +185,8 @@ class _SignupState extends State<Signup> {
                 onEditingComplete: () => _focusNodePhone.requestFocus(),
               ),
               const SizedBox(height: 10),
-              /// Phone field
+
+              // Phone field
               TextFormField(
                 controller: _controllerPhone,
                 focusNode: _focusNodePhone,
@@ -191,11 +201,10 @@ class _SignupState extends State<Signup> {
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
-                /// Username validation
                 onEditingComplete: () => _focusNodeAddress.requestFocus(),
               ),
               const SizedBox(height: 10),
-              /// Address field
+              // Address field
               TextFormField(
                 controller: _controllerAddress,
                 focusNode: _focusNodeAddress,
@@ -210,11 +219,10 @@ class _SignupState extends State<Signup> {
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
-                /// Username validation
                 onEditingComplete: () => _focusNodePassword.requestFocus(),
               ),
               const SizedBox(height: 10),
-              /// Password field
+              // Password field
               TextFormField(
                 controller: _controllerPassword,
                 obscureText: _obscurePassword,
@@ -224,14 +232,17 @@ class _SignupState extends State<Signup> {
                   labelText: "Password",
                   prefixIcon: const Icon(Icons.password_outlined),
                   suffixIcon: IconButton(
-                      onPressed: () {
-                        setState(() {
-                          _obscurePassword = !_obscurePassword;
-                        });
-                      },
-                      icon: _obscurePassword
-                          ? const Icon(Icons.visibility_outlined)
-                          : const Icon(Icons.visibility_off_outlined)),
+                    onPressed: () {
+                      setState(() {
+                        // menampilkan password secara tersembunyi
+                        _obscurePassword = !_obscurePassword;
+                      });
+                    },
+                    icon:
+                        _obscurePassword
+                            ? const Icon(Icons.visibility_outlined)
+                            : const Icon(Icons.visibility_off_outlined),
+                  ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
@@ -239,20 +250,23 @@ class _SignupState extends State<Signup> {
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
-                /// Password validation
+
+                // melakukan validasi password tidak boleh kosong
                 validator: (String? value) {
                   if (value == null || value.isEmpty) {
                     return "Password tidak boleh kosong.";
                   } else if (value.length < 8) {
+                    // melakukan validasi password minimal 8 karakter
                     return "Password minimal 8 karakter.";
                   }
                   return null;
                 },
-                onEditingComplete: () =>
-                    _focusNodeConfirmPassword.requestFocus(),
+                onEditingComplete:
+                    () => _focusNodeConfirmPassword.requestFocus(),
               ),
               const SizedBox(height: 10),
-              /// Confirm password field
+
+              // Confirm password field
               TextFormField(
                 controller: _controllerConFirmPassword,
                 obscureText: _obscurePassword,
@@ -262,14 +276,17 @@ class _SignupState extends State<Signup> {
                   labelText: "Konfirmasi Password",
                   prefixIcon: const Icon(Icons.password_outlined),
                   suffixIcon: IconButton(
-                      onPressed: () {
-                        setState(() {
-                          _obscurePassword = !_obscurePassword;
-                        });
-                      },
-                      icon: _obscurePassword
-                          ? const Icon(Icons.visibility_outlined)
-                          : const Icon(Icons.visibility_off_outlined)),
+                    onPressed: () {
+                      setState(() {
+                        // menampilkan password secara tersembunyi
+                        _obscurePassword = !_obscurePassword;
+                      });
+                    },
+                    icon:
+                        _obscurePassword
+                            ? const Icon(Icons.visibility_outlined)
+                            : const Icon(Icons.visibility_off_outlined),
+                  ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
@@ -277,10 +294,12 @@ class _SignupState extends State<Signup> {
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
-                /// Confirm password validation
+
+                // melakukan validasi password tidak boleh kosong
                 validator: (String? value) {
                   if (value == null || value.isEmpty) {
                     return "Password tidak boleh kosong.";
+                    // melakukan validasi password tidak cocok dengan password sebelumnya
                   } else if (value != _controllerPassword.text) {
                     return "Password tidak cocok.";
                   }
@@ -288,7 +307,8 @@ class _SignupState extends State<Signup> {
                 },
               ),
               const SizedBox(height: 50),
-              /// Register button
+
+              // tombol register
               Column(
                 children: [
                   ElevatedButton(
@@ -298,6 +318,7 @@ class _SignupState extends State<Signup> {
                         borderRadius: BorderRadius.circular(20),
                       ),
                     ),
+                    // memanggil fungsi signup
                     onPressed: signup,
                     child: const Text("Register"),
                   ),
@@ -322,7 +343,7 @@ class _SignupState extends State<Signup> {
 
   @override
   void dispose() {
-    // Dispose of the focus nodes to prevent memory leaks.
+    // membuang focus node agar tidak terjadi memory leak
     _focusNodeUsername.dispose();
     _focusNodeEmail.dispose();
     _focusNodePhone.dispose();
@@ -330,7 +351,7 @@ class _SignupState extends State<Signup> {
     _focusNodePassword.dispose();
     _focusNodeConfirmPassword.dispose();
 
-    // Dispose of the text editing controllers to prevent memory leaks.
+    // membuang controller agar tidak terjadi memory leak
     _controllerUsername.dispose();
     _controllerEmail.dispose();
     _controllerPhone.dispose();
@@ -338,7 +359,6 @@ class _SignupState extends State<Signup> {
     _controllerPassword.dispose();
     _controllerConFirmPassword.dispose();
 
-    // Call the superclass's dispose method.
     super.dispose();
   }
 }

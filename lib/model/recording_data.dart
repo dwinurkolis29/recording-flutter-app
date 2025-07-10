@@ -1,5 +1,6 @@
 import 'safe_convert.dart';
 
+// model untuk menyimpan data recording ayam
 class RecordingData {
   final int umur;
   final int terimaPakan;

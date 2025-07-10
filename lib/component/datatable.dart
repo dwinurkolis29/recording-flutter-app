@@ -14,6 +14,7 @@ class ChickenDataTableState extends State<ChickenDataTable> {
   int _rowsPerPage = PaginatedDataTable.defaultRowsPerPage;
   int _sortColumnIndex = 0;
   bool _sortAscending = true;
+  // membuat variabel untuk menyimpan data recording ayam
   late List<RecordingData> _chickenData;
   late ChickenDataSource _chickenDataSource;
 
@@ -41,17 +42,21 @@ class ChickenDataTableState extends State<ChickenDataTable> {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
+      // membuat paginated data table
       child: PaginatedDataTable(
+        // membuat header pada paginated data table
         header: const Text('Recording Data'),
         rowsPerPage: _rowsPerPage,
         onRowsPerPageChanged: (value) {
           setState(() {
+            // mengatur jumlah baris per halaman
             _rowsPerPage = value ?? 10;
           });
         },
         sortColumnIndex: _sortColumnIndex,
         sortAscending: _sortAscending,
         columns: [
+          // membuat kolom pada paginated data table
           DataColumn(
             label: const Text('Umur (hari)'),
             numeric: true,
@@ -91,7 +96,8 @@ class ChickenDataTableState extends State<ChickenDataTable> {
 
 class ChickenDataSource extends DataTableSource {
   final List<RecordingData> _chickenData;
-  
+
+  // membuat konstruktor untuk memasukkan data recording ayam
   ChickenDataSource(List<RecordingData> chickenData) : _chickenData = chickenData;
 
   void sort<T>(Comparable<T> Function(RecordingData d) getField, bool ascending) {
@@ -109,10 +115,12 @@ class ChickenDataSource extends DataTableSource {
   DataRow? getRow(int index) {
     if (index >= _chickenData.length) return null;
     final chicken = _chickenData[index];
-    
+
+    // membuat baris data
     return DataRow.byIndex(
       index: index,
       cells: [
+        // membuat cell pada baris data
         DataCell(Text(chicken.umur.toString())),
         DataCell(Text(chicken.terimaPakan.toStringAsFixed(2))),
         DataCell(Text(chicken.habisPakan.toStringAsFixed(2))),

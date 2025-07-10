@@ -1,10 +1,69 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:uts_project/model/cage_data.dart';
+import 'package:uts_project/service/firebase_service.dart';
 
-class PopulationSection extends StatelessWidget {
-  const PopulationSection();
+class PopulationSection extends StatefulWidget {
+  int populationRemain;
+
+  PopulationSection({Key? key, required this.populationRemain})
+    : super(key: key);
+
+  @override
+  State<PopulationSection> createState() => _PopulationSectionState();
+}
+
+class _PopulationSectionState extends State<PopulationSection> {
+  final FirebaseService _firebaseService = FirebaseService();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  CageData? _cageData;
+  bool _isLoading = true;
+  String _errorMessage = '';
+
+
+  @override
+  void initState() {
+    super.initState();
+    // Memuat data kandang ketika halaman pertama kali dibuka
+    _loadCageData();
+  }
+
+  // Memuat data kandang dari Firebase
+  Future<void> _loadCageData() async {
+    try {
+      final user = _auth.currentUser;
+      if (user != null) {
+        // Memuat data kandang
+        final cageData = await _firebaseService.getCage(user.email!);
+        if (mounted) {
+          setState(() {
+            // Memperbarui state dengan data kandang
+            _cageData = cageData;
+            _isLoading = false;
+          });
+        }
+      } else {
+        setState(() {
+          // Menampilkan pesan jika pengguna belum login
+          _errorMessage = 'Pengguna tidak login';
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'Gagal memuat data: $e';
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+
+    // Menghitung persentase ayam yang masih hidup dari jumlah populasi
+    double progress = _cageData == null || _cageData!.capacity == 0 ? 0 : widget.populationRemain / (_cageData?.capacity ?? 1);
+    String percentage = (progress * 100).toStringAsFixed(1);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -22,9 +81,10 @@ class PopulationSection extends StatelessWidget {
                     color: Color(0xFF333333),
                   ),
                 ),
-                const Text(
-                  '3000',
-                  style: TextStyle(
+                Text(
+                  // menampilkan jumlah ayam yang masih hidup
+                  widget.populationRemain.toString(),
+                  style: const TextStyle(
                     fontSize: 45,
                     fontWeight: FontWeight.bold,
                     color: Color(0xFF5A61B4),
@@ -44,7 +104,9 @@ class PopulationSection extends StatelessWidget {
                   Text(
                     'Ekor ayam',
                     style: TextStyle(
-                        fontWeight: FontWeight.bold, color: Color(0xFF5A61B4)),
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF5A61B4),
+                    ),
                   ),
                 ],
               ),
@@ -57,19 +119,20 @@ class PopulationSection extends StatelessWidget {
                 fit: StackFit.expand,
                 children: [
                   CircularProgressIndicator(
-                    value: 2500/3000,
+                    value: progress,
                     strokeWidth: 10,
                     backgroundColor: Colors.grey[200],
                     valueColor: const AlwaysStoppedAnimation<Color>(
                       Color(0xFF5A61B4),
                     ),
                   ),
-                  const Center(
+                  Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          '80%',
+                          // menampilkan persentase ayam yang masih hidup
+                          '$percentage%',
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
@@ -77,10 +140,7 @@ class PopulationSection extends StatelessWidget {
                         ),
                         Text(
                           'dari 100%',
-                          style: TextStyle(
-                            fontSize: 10,
-                            color: Colors.grey,
-                          ),
+                          style: TextStyle(fontSize: 10, color: Colors.grey),
                         ),
                       ],
                     ),
