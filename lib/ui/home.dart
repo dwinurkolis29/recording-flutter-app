@@ -1,16 +1,16 @@
 import 'package:firebase_auth/firebase_auth.dart' hide User;
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:uts_project/model/fcr_data.dart';
-import 'package:uts_project/service/firebase_service.dart';
-import 'package:uts_project/component/statistics_section.dart';
-import 'package:uts_project/component/datatable.dart';
-import 'package:uts_project/component/population_widget.dart';
-import 'package:uts_project/ui/cage.dart';
-import 'package:uts_project/ui/form_record.dart';
-import 'package:uts_project/ui/login.dart';
-import 'package:uts_project/ui/user.dart';
-import 'package:uts_project/model/recording_data.dart';
+import 'package:recording_app/model/fcr_data.dart';
+import 'package:recording_app/service/firebase_service.dart';
+import 'package:recording_app/component/statistics_section.dart';
+import 'package:recording_app/component/datatable.dart';
+import 'package:recording_app/component/population_widget.dart';
+import 'package:recording_app/ui/cage.dart';
+import 'package:recording_app/ui/form_record.dart';
+import 'package:recording_app/ui/login.dart';
+import 'package:recording_app/ui/user.dart';
+import 'package:recording_app/model/recording_data.dart';
 
 import '../component/fcr_datatable.dart';
 

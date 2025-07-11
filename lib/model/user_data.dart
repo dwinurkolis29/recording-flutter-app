@@ -1,4 +1,4 @@
-import 'package:uts_project/model/safe_convert.dart';
+import 'package:recording_app/model/safe_convert.dart';
 
 // model untuk menyimpan data user/peternak
 class UserData {

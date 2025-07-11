@@ -1,7 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:uts_project/model/cage_data.dart';
-import 'package:uts_project/service/firebase_service.dart';
+import 'package:recording_app/model/cage_data.dart';
+import 'package:recording_app/service/firebase_service.dart';
 
 class Cage extends StatefulWidget {
   const Cage({super.key});

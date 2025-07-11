@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:uts_project/model/recording_data.dart';
+import 'package:recording_app/model/recording_data.dart';
 
 import '../service/firebase_service.dart';
 

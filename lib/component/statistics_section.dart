@@ -1,7 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
-import 'package:uts_project/service/firebase_service.dart';
+import 'package:recording_app/service/firebase_service.dart';
 
 class StatisticsSection extends StatelessWidget {
   double fcr;

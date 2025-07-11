@@ -1,4 +1,4 @@
-import 'package:uts_project/model/recording_data.dart';
+import 'package:recording_app/model/recording_data.dart';
 
 // Model untuk menyimpan data FCR per minggu
 class FCRData {

@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide User;
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:uts_project/model/user_data.dart';
+import 'package:recording_app/model/user_data.dart';
 
 class Signup extends StatefulWidget {
   const Signup({super.key});
